@@ -1,7 +1,7 @@
 #!/usr/bin/python3.7
 # _*_ coding: utf-8 _*_
 
-from query_disk import query_info
+from disk_util.query_info import QueryInfo
 
 
 def conctrol_opt(args):
@@ -11,5 +11,5 @@ def conctrol_opt(args):
         'user': args.user,
         'password': args.password
     }
-    query_opt = query_info(**args_dict)
+    query_opt = QueryInfo(**args_dict)
     query_opt.get_info()
