@@ -8,8 +8,10 @@ import paramiko
 
 from datetime import datetime
 from IPy import IP
+from disk_util import util_constant as const
+from log.util_log import CreateLog
 
-PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+log = CreateLog('disk_monitor', 'console.log').get_logger()
 
 
 class QueryInfo(object):
@@ -24,8 +26,7 @@ class QueryInfo(object):
         return ip_version
 
     def register_info(self, disk_str, write_mode='w'):
-        disk_info_file = os.path.join(
-            os.path.dirname(PARENT_DIR), 'disk_info.json')
+        disk_info_file = const.JSON_FILE_PATH
         with open(disk_info_file, write_mode) as f:
             register_date = datetime.now()
             query_time = register_date.strftime("%Y-%m-%d %H:%M:%S")
@@ -47,7 +48,7 @@ class QueryInfo(object):
         return stdout
 
     def login_node(self):
-        print("ip version type is %s" % type(self.judge_ip()))
+        log.info("ip version type is %s" % type(self.judge_ip()))
         if self.judge_ip() == 4:
             paramiko.util.log_to_file('syslogin.log')
             ssh = paramiko.SSHClient()
@@ -56,14 +57,14 @@ class QueryInfo(object):
             ssh.connect(hostname=self.__ip, username=self.__user,
                         password=self.__password)
 
-            print("login %s successful" % self.__ip)
+            log.info("login %s successful" % self.__ip)
             return ssh
         else:
-            print("ip type is ipv6")
+            log.info("ip type is ipv6")
 
     def get_info(self):
             ssh_opt = self.login_node()
-            print("start to exec cmd......")
+            log.info("start to exec cmd......")
             cmd_content = self.host_cmd(ssh_opt, 'df -h').read().decode('utf-8')
             ssh_opt.close()
             self.register_info(cmd_content)
