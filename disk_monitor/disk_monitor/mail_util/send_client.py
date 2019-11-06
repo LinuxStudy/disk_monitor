@@ -36,11 +36,12 @@ class SendClient(object):
         sender = cg.get('email', 'admin_mail')
         send_pass = cg.get('email', 'admin_password')
         recvers = [cg.get('email', 'custom_mail')]
-        duplicates = [cg.get('email', 'duplicate')]
+        duplicates = [cg.get('email', 'duplicate_mail')]
         recvers.extend(duplicates)
 
         subject = "Mail function of disk_monitor"
-        body = "Your disk available percent is %22!"
+        disk_str = cg.get(const.DISK_SPACE_SECTION, 'used_value')
+        body = "Your disk available percent is %s!" % disk_str
         send_msg = self.mail_msg(sender, recvers, subject, body)
         send_opt = SMTP(smtp_serv)
         send_opt.connect(smtp_serv, '25')
@@ -52,8 +53,3 @@ class SendClient(object):
         print(type(send_status))
         log.info("Send email to %s succeful!" % recvers)
         send_opt.quit()
-
-
-if __name__ == '__main__':
-    mail_agent = SendClient()
-    mail_agent.mail_send()

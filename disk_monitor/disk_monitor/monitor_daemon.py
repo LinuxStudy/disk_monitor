@@ -2,6 +2,7 @@
 # _*_ coding: utf-8 _*_
 
 import os
+import time
 
 from datetime import datetime
 
@@ -9,6 +10,7 @@ from disk_util.query_info import QueryInfo
 from disk_util.load_info import LoadInfo
 from disk_util import util_constant as const
 from load_conf import ConfOperate
+from mail_util.send_client import SendClient
 from sql_conn.db_prepare import DbBaseOperate
 
 
@@ -32,6 +34,7 @@ class DaemonProcess(object):
 
     def daemon_opt(self):
         cg = ConfOperate().conf_opt(self.__conf_file)
+        email_value = cg.get(const.DISK_SPACE_SECTION, 'warn_value')
         email_string = cg.get(
             const.EMIAL_INFO_SECTION, const.EMIAL_CUSTOM_OPTION) + "+" + \
                 cg.get(const.EMIAL_INFO_SECTION, const.EMIAL_DUPLICATE_OPTION)
@@ -41,11 +44,15 @@ class DaemonProcess(object):
         conf_dict = ConfOperate().get_conf(
             'host', self.__conf_file, *options_list)
         while True:
+            time.sleep(60)
             db_info = self.monitor_action(conf_dict)
             query_count += 1
             db_static_data['query_id'] = int(query_count)
             db_info.update(db_static_data)
             print(db_info)
+            if db_info['used'] > email_value:
+                SendClient().mail_send()
+            # DbBaseOperate().db_operate(db_info)
             db_info.clear()
 
 
